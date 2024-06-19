@@ -1,6 +1,6 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, Date, Enum, Text
-from sqlalchemy.orm import relationship
-from sqlalchemy.ext.declarative import declarative_base
+
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Date, Text
+from sqlalchemy.orm import relationship, declarative_base
 
 Base = declarative_base()
 
@@ -20,8 +20,9 @@ class Hotel(Base):
     timezone = Column(String, nullable=False)
     star_rating = Column(Integer, nullable=False)
 
-    chain = relationship("Chain")
-    amenities = relationship("Amenity")
+    chain = relationship("Chain", back_populates="hotels")
+    amenities = relationship("Amenity", back_populates="hotels")
+    rooms = relationship("Room", back_populates="hotel")
 
 class Room(Base):
     __tablename__ = "rooms"
@@ -36,8 +37,9 @@ class Room(Base):
     description = Column(Text)
     status = Column(String, nullable=False)
 
-    hotel = relationship("Hotel")
-    room_type = relationship("RoomType")
+    hotel = relationship("Hotel", back_populates="rooms")
+    room_type = relationship("RoomType", back_populates="rooms")
+    reservations = relationship("Reservation", back_populates="room")
 
 class Customer(Base):
     __tablename__ = "customers"
@@ -50,6 +52,8 @@ class Customer(Base):
     address = Column(String, nullable=False)
     chain_loyalty_no = Column(String)
 
+    reservations = relationship("Reservation", back_populates="customer")
+
 class RoomType(Base):
     __tablename__ = "room_types"
 
@@ -57,6 +61,8 @@ class RoomType(Base):
     name = Column(String, nullable=False)
     description = Column(Text)
     capacity = Column(Integer, nullable=False)
+
+    rooms = relationship("Room", back_populates="room_type")
 
 class Chain(Base):
     __tablename__ = "chains"
@@ -67,6 +73,8 @@ class Chain(Base):
     active_coupons = Column(Text)
     contact_info = Column(Text)
 
+    hotels = relationship("Hotel", back_populates="chain")
+
 class Amenity(Base):
     __tablename__ = "amenities"
 
@@ -74,6 +82,8 @@ class Amenity(Base):
     service_name = Column(String, nullable=False)
     fees = Column(Float, nullable=False)
     description = Column(Text)
+
+    hotels = relationship("Hotel", back_populates="amenities")
 
 class Reservation(Base):
     __tablename__ = "reservations"
@@ -90,8 +100,10 @@ class Reservation(Base):
     payment_till_date = Column(Float, nullable=False)
     system_status = Column(String, nullable=False)
 
-    room = relationship("Room")
-    customer = relationship("Customer")
+    room = relationship("Room", back_populates="reservations")
+    customer = relationship("Customer", back_populates="reservations")
+    payments = relationship("Payment", back_populates="reservation")
+    service_orders = relationship("ServiceOrder", back_populates="reservation")
 
 class Payment(Base):
     __tablename__ = "payments"
@@ -102,7 +114,7 @@ class Payment(Base):
     payment_date = Column(Date, nullable=False)
     mode_of_payment = Column(String, nullable=False)
 
-    reservation = relationship("Reservation")
+    reservation = relationship("Reservation", back_populates="payments")
 
 class ServiceOrder(Base):
     __tablename__ = "service_orders"
@@ -113,4 +125,4 @@ class ServiceOrder(Base):
     total_bill = Column(Float, nullable=False)
     reservation_id = Column(Integer, ForeignKey("reservations.reservation_id"))
 
-    reservation = relationship("Reservation")
+    reservation = relationship("Reservation", back_populates="service_orders")
