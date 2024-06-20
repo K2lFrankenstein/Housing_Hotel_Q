@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 # hotel schema
+
 class HotelBase(BaseModel):
     chain_id: int
     name: str
